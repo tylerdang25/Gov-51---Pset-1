@@ -64,6 +64,13 @@ acs2024table <- data.frame(
            mean(acs2024$employed), mean(acs2024$unemployed),mean(acs2024$nlf),
            mean(acs2024$TRANTIME), mean(acs2024$INCTOT) / 1e6),
   
+  Med = c(median(acs2024$AGE), median(acs2024$female), 
+             median(acs2024$educ_lhs), median(acs2024$educ_hs), 
+             median(acs2024$educ_somecol), median(acs2024$educ_college), 
+             median(acs2024$educ_adv),median(acs2024$employed), 
+             median(acs2024$unemployed),median(acs2024$nlf),
+             median(acs2024$TRANTIME), median(acs2024$INCTOT) / 1e6),
+  
   SD = c(sd(acs2024$AGE), sd(acs2024$female),sd(acs2024$educ_lhs), 
          sd(acs2024$educ_hs), sd(acs2024$educ_somecol), 
          sd(acs2024$educ_college), sd(acs2024$educ_adv), sd(acs2024$employed), 
@@ -89,7 +96,7 @@ acs2024rounded[, -1] <- round(acs2024table[, -1], 2)
 #acs2024rounded
 
 knitr::kable(acs2024rounded, 
-             caption = "Table 1: Summary Statistics for 2024 ACS Sample",
+             caption = "Summary Statistics for 2024 ACS Sample",
              digits = 2)
 ```
 
@@ -154,27 +161,34 @@ commuterstable <- data.frame(
                "Some College", "College Only", "Advanced Degree", 
                "Commute Time (mins)", "Total Income ($)"),
   
-  N = c(length(commuters$AGE), length(commuters$female),length(commuters$educ_lhs), 
+  N = c(length(commuters$AGE), length(commuters$female),
+        length(commuters$educ_lhs), 
         length(commuters$educ_hs), length(commuters$educ_somecol), 
         length(commuters$educ_college), length(commuters$educ_adv),
         length(commuters$TRANTIME), length(commuters$INCTOT)),
   
-  Mean = c(mean(commuters$AGE), mean(commuters$female), mean(commuters$educ_lhs), 
+  Mean = c(mean(commuters$AGE), mean(commuters$female), mean(commuters$educ_lhs),
            mean(commuters$educ_hs), mean(commuters$educ_somecol), 
            mean(commuters$educ_college), mean(commuters$educ_adv),
            mean(commuters$TRANTIME), mean(commuters$INCTOT) / 1e6),
   
+    Med = c(median(commuters$AGE), median(commuters$female), 
+            median(commuters$educ_lhs), median(commuters$educ_hs), 
+            median(commuters$educ_somecol), median(commuters$educ_college), 
+            median(commuters$educ_adv), median(commuters$TRANTIME), 
+            median(commuters$INCTOT) / 1e6),
+  
   SD = c(sd(commuters$AGE), sd(commuters$female),sd(commuters$educ_lhs), 
          sd(commuters$educ_hs), sd(commuters$educ_somecol), 
-         sd(commuters$educ_college), sd(commuters$educ_adv), sd(commuters$TRANTIME), 
-         sd(commuters$INCTOT) / 1e6),
+         sd(commuters$educ_college), sd(commuters$educ_adv), 
+         sd(commuters$TRANTIME), sd(commuters$INCTOT) / 1e6),
   
   Min = c(min(commuters$AGE), min(commuters$female), min(commuters$educ_lhs), 
           min(commuters$educ_hs), min(commuters$educ_somecol), 
           min(commuters$educ_college), min(commuters$educ_adv),
           min(commuters$TRANTIME), min(commuters$INCTOT) / 1e6),
   
-  Max = c(max(commuters$AGE), max(commuters$female),max(commuters$educ_lhs), 
+  Max = c(max(commuters$AGE), max(commuters$female), max(commuters$educ_lhs), 
           max(commuters$educ_hs), max(commuters$educ_somecol), 
           max(commuters$educ_college), max(commuters$educ_adv),
           max(commuters$TRANTIME), max(commuters$INCTOT) / 1e6)
@@ -186,12 +200,31 @@ commutersrounded[, -1] <- round(commuterstable[, -1], 2)
 #acs2024rounded
 
 knitr::kable(commutersrounded, 
-             caption = "Table 2: Summary Statistics for 2024 ACS Commuters Sample",
+             caption = "Summary Statistics for 2024 ACS Commuters Sample",
              digits = 2)
 ```
 
 ## 4. Visualize and Interpret
 
 ```{r}
-commuters %>%
+commutersplot <- commuters %>%
+  ggplot(mapping = aes(x = TRANTIME),) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "white") + 
+  scale_y_continuous(labels = scales::label_number()) +
+  labs(x = "Daily Commute Time (minutes)",
+       y = "Number of Observations",
+       title = "Daily Commute Time in Minutes for the Employed Respondents \n in the ACS2024 Data Set")
+
+commutersplot
+
+ggsave ("output/commute_histogram.png" ,
+        plot = commutersplot,width = 8 , height = 5)
+
 ```
+
+Based upon the histogram above, it is clear that commute time is left skewed with a center at 20 minutes, with a minimum of 0 minutes and a maximum of 195. There is a spike from the mid 50 minutes to an hour. This can be explained by respondents rounding their commute times to a flat hour.
+
+Comparing our two tables (one of the entire 2024 ACS dataset and the second of the filtered commuters subset), it is immediately clear that the subset that omits observations that would not actually have a recorded commute time leads to an increase in the mean and median time relative to those of the initial dataset.
+
+From this fact (and the shape of the commuters distribution above) we know that the dataset distribution would be much more skewed left with an even higher peak at 0 minutes.
+
